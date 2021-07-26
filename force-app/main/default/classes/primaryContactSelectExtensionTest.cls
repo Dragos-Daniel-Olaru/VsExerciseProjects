@@ -11,12 +11,35 @@
  *              July 23, 2021                      Dragos Olaru
  */
 @isTest
-public class primaryContactSelectExtensionTest {
-  public Account person;
-  public primaryContactSelectExtensionTest(
-    ApexPages.StandardController stdController
-  ) {
-    this.person = (Account) stdController.getRecord();
+private class primaryContactSelectExtensionTest {
+  /**
+   * @author Dragos Olaru
+   * @Date July 26, 2021
+   * @name setup
+   * @description Setup method for dummy records
+   * @return void
+   */
+
+  @testSetup
+  static void setup() {
+    List<Contact> ContactList = new List<Contact>();
+    Account testAccount = new Account();
+    testAccount.Name = 'demo';
+    insert testAccount;
+
+    ContactList[0].AccountId = testAccount.Id;
+    ContactList[0].lastName = 'demoContact';
+    ContactList[0].Title = 'Ms';
+    ContactList[0].Phone = '202-555-0137';
+    ContactList[0].Is_Primary_Contact__c = false;
+
+    ContactList[1].AccountId = testAccount.Id;
+    ContactList[1].lastName = 'demoContactTrue';
+    ContactList[1].Title = 'Ms';
+    ContactList[1].Phone = '202-555-0136';
+    ContactList[1].Is_Primary_Contact__c = true;
+
+    insert ContactList;
   }
 
   /**
@@ -28,22 +51,26 @@ public class primaryContactSelectExtensionTest {
    */
 
   public static testMethod void TestSearch() {
-    Account testAccount = new Account();
-    Contact testContact = new Contact();
-    testAccount.Name = 'demo';
-    insert testAccount;
-    testContact.AccountId = testAccount.Id;
-    testContact.lastName = 'demoContact';
-    testContact.Title = 'Ms';
-    testContact.Phone = '202-555-0137';
-    testContact.Is_Primary_Contact__c = false;
-
-    insert testContact;
-
-    primaryContactSelectExtension testController = new primaryContactSelectExtension();
+    Account acct = [SELECT Id FROM Account WHERE Name = 'demo' LIMIT 1];
+    Contact TestContact = [
+      SELECT Id, AccountId, Is_Primary_Contact__c
+      FROM Contact
+      WHERE Name = 'demoContact'
+      LIMIT 1
+    ];
+    ApexPages.StandardController testStandardController = new ApexPages.StandardController(
+      acct
+    );
+    primaryContactSelectExtension testController = new primaryContactSelectExtension(
+      testStandardController
+    );
     testController.searchKey = 'de';
+    testController.recordToModifyKey = testcontact.Id;
     testController.contactWorkedOn = new List<Contact>();
-    testController.person = testAccount;
+    testController.person = acct;
+    ApexPages.currentPage()
+      .getParameters()
+      .put('recordToModifyKey', testController.recordToModifyKey);
     testController.search();
   }
 
@@ -56,37 +83,32 @@ public class primaryContactSelectExtensionTest {
    */
 
   public static testMethod void TestSetPrimary() {
-    Account testAccount = new Account();
-    Contact testContact = new Contact();
-    Contact testContactTrue = new Contact();
-    testAccount.Name = 'demo';
-    insert testAccount;
-
-    testContact.AccountId = testAccount.Id;
-    testContact.lastName = 'demoContact';
-    testContact.Title = 'Ms';
-    testContact.Phone = '202-555-0137';
-    testContact.Is_Primary_Contact__c = false;
-
-    testContactTrue.AccountId = testAccount.Id;
-    testContactTrue.lastName = 'demoContactTrue';
-    testContactTrue.Title = 'Ms';
-    testContactTrue.Phone = '202-555-0136';
-    testContactTrue.Is_Primary_Contact__c = true;
-
-    insert testContact;
-    insert testContactTrue;
-
-    primaryContactSelectExtension testController = new primaryContactSelectExtension();
+    Account acct = [SELECT Id FROM Account WHERE Name = 'demo' LIMIT 1];
+    Contact TestContact = [
+      SELECT Id, AccountId, Is_Primary_Contact__c
+      FROM Contact
+      WHERE Name = 'demoContact'
+      LIMIT 1
+    ];
+    Contact TestContactTrue = [
+      SELECT Id, AccountId, Is_Primary_Contact__c
+      FROM Contact
+      WHERE Name = 'demoContactTrue'
+      LIMIT 1
+    ];
+    ApexPages.StandardController testStandardController = new ApexPages.StandardController(
+      acct
+    );
+    primaryContactSelectExtension testController = new primaryContactSelectExtension(
+      testStandardController
+    );
     testController.searchKey = 'de';
-    testController.modKey = testcontact.Id;
+    testController.recordToModifyKey = testcontact.Id;
     testController.contactWorkedOn = new List<Contact>();
-    testController.person = testAccount;
-    System.debug(testController.modKey);
-    System.debug(testcontact.Id);
+    testController.person = acct;
     ApexPages.currentPage()
       .getParameters()
-      .put('modKey', testController.modKey);
+      .put('recordToModifyKey', testController.recordToModifyKey);
     testController.search();
     testController.setPrimary();
   }
@@ -100,33 +122,32 @@ public class primaryContactSelectExtensionTest {
    */
 
   public static testMethod void TestSetPrimaryListFail() {
-    Account testAccount = new Account();
-    Contact testContact = new Contact();
-    Contact testContactTrue = new Contact();
-    testAccount.Name = 'demo';
-    insert testAccount;
-    testContact.AccountId = testAccount.Id;
-    testContact.lastName = 'demoContact';
-    testContact.Title = 'Ms';
-    testContact.Phone = '202-555-0137';
-    testContact.Is_Primary_Contact__c = false;
-
-    testContactTrue.AccountId = testAccount.Id;
-    testContactTrue.lastName = 'demoContactTrue';
-    testContactTrue.Title = 'Ms';
-    testContactTrue.Phone = '202-555-01376';
-    testContactTrue.Is_Primary_Contact__c = true;
-
-    insert testContact;
-    insert testContactTrue;
-
-    primaryContactSelectExtension testController = new primaryContactSelectExtension();
-    testController.modKey = testcontact.Id;
+    Account acct = [SELECT Id FROM Account WHERE Name = 'demo' LIMIT 1];
+    Contact TestContact = [
+      SELECT Id, AccountId, Is_Primary_Contact__c
+      FROM Contact
+      WHERE Name = 'demoContact'
+      LIMIT 1
+    ];
+    Contact TestContactTrue = [
+      SELECT Id, AccountId, Is_Primary_Contact__c
+      FROM Contact
+      WHERE Name = 'demoContactTrue'
+      LIMIT 1
+    ];
+    ApexPages.StandardController testStandardController = new ApexPages.StandardController(
+      acct
+    );
+    primaryContactSelectExtension testController = new primaryContactSelectExtension(
+      testStandardController
+    );
+    testController.searchKey = 'de';
+    testController.recordToModifyKey = testcontact.Id;
     testController.contactWorkedOn = new List<Contact>();
-    testController.person = testAccount;
+    testController.person = acct;
     ApexPages.currentPage()
       .getParameters()
-      .put('modKey', testController.modKey);
+      .put('recordToModifyKey', testController.recordToModifyKey);
     testController.setPrimary();
   }
 }

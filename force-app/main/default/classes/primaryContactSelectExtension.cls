@@ -17,12 +17,12 @@ global with sharing class primaryContactSelectExtension {
   ) {
     this.person = (Account) stdController.getRecord();
   }
-  public primaryContactSelectExtension() {
-  }
 
   public list<Contact> contactWorkedOn { get; set; }
   public String searchKey { get; set; }
-  public String modKey { get; set; }
+  public String recordToModifyKey { get; set; }
+  public Integer pageCounter = 0;
+  public Integer pageSize = 10;
 
   /**
    * @author Dragos Olaru
@@ -36,7 +36,8 @@ global with sharing class primaryContactSelectExtension {
       SELECT Id, LastName, title, phone, Is_Primary_Contact__c
       FROM Contact
       WHERE Accountid = :this.person.Id AND lastname LIKE :'%' + searchKey + '%'
-      LIMIT 10
+      LIMIT :pageSize
+      OFFSET :pageCounter
     ];
   }
 
@@ -49,18 +50,20 @@ global with sharing class primaryContactSelectExtension {
    */
   public void setPrimary() {
     try {
-      modKey = apexpages.currentpage().getparameters().get('modKey');
+      recordToModifyKey = apexpages.currentpage()
+        .getparameters()
+        .get('recordToModifyKey');
       contactWorkedOn[0] = [
         SELECT Id, Is_Primary_Contact__c
         FROM Contact
-        WHERE id = :modKey AND Accountid = :this.person.Id
+        WHERE id = :recordToModifyKey AND Accountid = :this.person.Id
       ];
       contactWorkedOn[0].Is_Primary_Contact__c = true;
       contactWorkedOn[1] = [
         SELECT Id, Is_Primary_Contact__c
         FROM Contact
         WHERE
-          id != :modKey
+          id != :recordToModifyKey
           AND Accountid = :this.person.Id
           AND Is_Primary_Contact__c = TRUE
       ];
@@ -75,5 +78,31 @@ global with sharing class primaryContactSelectExtension {
       System.debug('The following exception has occurred: ' + e.getMessage());
     }
     search();
+  }
+
+  /**
+   * @author Dragos Olaru
+   * @Date July 26, 2021
+   * @name Previous
+   * @description Go to previous page
+   * @return null
+   */
+
+  public PageReference Previous() {
+    pageCounter -= pageSize;
+    return null;
+  }
+
+  /**
+   * @author Dragos Olaru
+   * @Date July 26, 2021
+   * @name Previous
+   * @description Go to next page
+   * @return null
+   */
+
+  public PageReference Next() {
+    pageCounter += pageSize;
+    return null;
   }
 }

@@ -3,7 +3,7 @@
   extensions="primaryContactSelectExtension"
 >
   <script>
-    function javascriptMethodForUpdatingContact(Id) {
+    function javascriptMethodForCallingTheActionFunction(Id) {
       if (confirm("{!$Label.ModifyAlert}")) {
         updateContact(Id);
       }
@@ -37,6 +37,18 @@
     </apex:form>
 
     <apex:pageBlock title="Search related contacts">
+      <apex:pageBlockButtons location="top">
+        <apex:outputPanel id="myButtons">
+          <apex:form>
+            <apex:commandButton
+              action="{!Previous}"
+              title="Previous"
+              value="<"
+            />
+            <apex:commandButton action="{!Next}" title="Next" value=">" />
+          </apex:form>
+        </apex:outputPanel>
+      </apex:pageBlockButtons>
       <apex:form>
         <apex:inputText value="{!searchKey}" label="Input" />
         <apex:commandButton value="Search" action="{!search}" />
@@ -49,7 +61,7 @@
               <apex:column value="{!c.Is_Primary_Contact__c}" />
               <apex:column>
                 <apex:commandLink
-                  onclick="javascriptMethodForUpdatingContact('{!c.id}');return false;"
+                  onclick="javascriptMethodForCallingTheActionFunction('{!c.id}');return false;"
                   value="Set as primary"
                   rendered="{!(c.Is_Primary_Contact__c = false)}"
                 />
@@ -60,7 +72,10 @@
               action="{!setPrimary}"
               reRender="exec"
             >
-              <apex:param name="modKey" value="{!modKey}" />
+              <apex:param
+                name="recordToModifyKey"
+                value="{!recordToModifyKey}"
+              />
             </apex:actionFunction>
           </apex:pageBlock>
         </apex:outputPanel>
