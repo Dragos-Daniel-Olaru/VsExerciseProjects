@@ -1,0 +1,85 @@
+<apex:page
+  standardController="Account"
+  extensions="primaryContactSelectExtension"
+>
+  <script>
+    function javascriptMethodForCallingTheActionFunction(Id) {
+      if (confirm("{!$Label.ModifyAlert}")) {
+        updateContact(Id);
+      }
+    }
+  </script>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Account primary contact</title>
+    <!-- Import the Design System style sheet -->
+    <apex:slds />
+  </head>
+  <body>
+    <apex:form>
+      <apex:pageBlock title="Account primary contact">
+        <!--Buttons -->
+        <apex:pageBlockButtons>
+          <apex:commandButton action="{!save}" value="Save" />
+          <apex:commandButton action="{!cancel}" value="Cancel" />
+        </apex:pageBlockButtons>
+        <!--Input form -->
+        <apex:pageBlockSection columns="2">
+          <apex:inputField value="{!Account.Name}" />
+          <apex:inputField value="{!Account.AccountNumber}" />
+          <apex:inputField value="{!Account.Type}" />
+          <apex:inputField value="{!Account.Active__c}" />
+          <apex:inputField value="{!Account.Phone}" />
+          <apex:inputField value="{!Account.Fax}" />
+        </apex:pageBlockSection>
+      </apex:pageBlock>
+    </apex:form>
+
+    <apex:pageBlock title="Search related contacts">
+      <apex:pageBlockButtons location="top">
+        <apex:outputPanel id="myButtons">
+          <apex:form>
+            <apex:commandButton
+              action="{!Previous}"
+              title="Previous"
+              value="<"
+            />
+            <apex:commandButton action="{!Next}" title="Next" value=">" />
+          </apex:form>
+        </apex:outputPanel>
+      </apex:pageBlockButtons>
+      <apex:form>
+        <apex:inputText value="{!searchKey}" label="Input" />
+        <apex:commandButton value="Search" action="{!search}" />
+        <apex:outputPanel id="exec">
+          <apex:pageBlock title="Related contacts">
+            <apex:pageBlockTable value="{!contactWorkedOn}" var="c">
+              <apex:column value="{!c.LastName}" />
+              <apex:column value="{!c.title}" />
+              <apex:column value="{!c.phone}" />
+              <apex:column value="{!c.Is_Primary_Contact__c}" />
+              <apex:column>
+                <apex:commandLink
+                  onclick="javascriptMethodForCallingTheActionFunction('{!c.id}');return false;"
+                  value="Set as primary"
+                  rendered="{!(c.Is_Primary_Contact__c = false)}"
+                />
+              </apex:column>
+            </apex:pageBlockTable>
+            <apex:actionFunction
+              name="updateContact"
+              action="{!setPrimary}"
+              reRender="exec"
+            >
+              <apex:param
+                name="recordToModifyKey"
+                value="{!recordToModifyKey}"
+              />
+            </apex:actionFunction>
+          </apex:pageBlock>
+        </apex:outputPanel>
+      </apex:form>
+    </apex:pageBlock>
+  </body>
+</apex:page>
